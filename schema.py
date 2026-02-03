@@ -1,5 +1,5 @@
 import strawberry
-from typing import List
+from typing import List, Optional
 from enum import Enum
 
 @strawberry.enum
@@ -35,5 +35,22 @@ class Mutation:
         )
         tasks_db.append(new_task)
         return new_task
+
+    @strawberry.mutation
+    def update_task_status(self, id: strawberry.ID, status: TaskStatus) -> Optional[Task]:
+        for task in tasks_db:
+            if task.id == id:
+                task.status = status
+                return task
+        
+        return None
+
+    @strawberry.mutation
+    def delete_task(self, id: strawberry.ID) -> bool:
+        global tasks_db
+        initial_len = len(tasks_db)
+        tasks_db = [t for t in tasks_db if t.id != id]
+        return len(tasks_db) < initial_len
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
